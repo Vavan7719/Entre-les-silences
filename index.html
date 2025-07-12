@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Juste Vide</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.507);
+    }
+
+    .background-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    #welcome {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: black;
+      color: #666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 10;
+      transition: opacity 1.5s ease;
+    }
+
+    #enterBtn {
+      margin-top: 20px;
+      padding: 12px 28px;
+      font-size: 1.1em;
+      background: none;
+      border: 1px solid #444;
+      color: #444;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+    }
+
+    #enterBtn:hover {
+      color: #fff;
+      border-color: #999;
+    }
+
+    #main {
+      display: none;
+    }
+
+    .text-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-size: 1.4em;
+      white-space: pre-line;
+      width: 80%;
+      color: #bbbbbb;
+      animation: fadeInOut 10s ease-in-out infinite;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.9; }
+    }
+
+    audio {
+      display: none;
+    }
+
+    #music-controls {
+      position: fixed;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 5;
+      align-items: center;
+    }
+
+    #music-controls button {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ccc;
+      border: 1px solid #444;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+    }
+
+    #music-controls button:hover {
+      color: #fff;
+      border-color: #aaa;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    #music-controls input[type="file"] {
+      display: none;
+    }
+
+    #volumeSlider {
+      width: 120px;
+      height: 6px;
+      border-radius: 5px;
+      background: #444;
+      accent-color: #888;
+      transition: background 0.3s;
+    }
+
+    #volumeSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #888;
+      cursor: pointer;
+    }
+
+    #volumeSlider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #888;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="welcome">
+  <h2>Il n'y a rien ici.</h2>
+  <button id="enterBtn">... entrer quand même</button>
+</div>
+
+<div id="main">
+  <video autoplay muted loop class="background-video">
+    <source src="P.mp4" type="video/mp4">
+    Votre navigateur ne supporte pas la lecture de cette vidéo.
+  </video>
+
+  <div class="overlay"></div>
+
+  <div class="text-container" id="quote">Rien n’a vraiment de sens.</div>
+
+  <audio id="music" loop>
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+
+  <div id="music-controls">
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" title="Volume">
+    <button id="muteBtn">Mute</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="playBtn">Lecture</button>
+    <input type="file" id="musicInput" accept="audio/mp3">
+    <button id="importBtn">Importer une musique</button>
+  </div>
+</div>
+
+<script>
+  const phrases = [
+"Un jour t’as cessé d’attendre quelque chose.",
+  "Tout s’efface, même les souvenirs heureux.",
+  "Tu souris quand on te parle. Mais t’écoutes pas.",
+  "Les gens demandent si ça va. Mais ils veulent pas savoir.",
+  "Tu fais semblant d’être occupé pour éviter de penser.",
+  "T’as oublié à quoi ressemble une vraie émotion.",
+  "Tu ris parfois. Mais c’est plus de l’air que du rire.",
+  "T’es pas triste. T’es juste vide.",
+  "Tu veux dormir pour fuir. Pas pour te reposer.",
+  "Les jours passent. Toi tu restes planté là.",
+  "Chaque réveil est une erreur.",
+  "T’as plus d’élan, juste l’habitude de marcher.",
+  "Même ton reflet détourne le regard.",
+  "T’écoutes des musiques tristes pour sentir quelque chose.",
+  "T’écris des trucs que tu supprimes aussitôt.",
+  "T’as envie de parler. Mais t’as plus les mots.",
+  "Tu fais semblant d’aller mieux. Pour pas les inquiéter.",
+  "T’as l’impression de trahir ton propre silence.",
+  "Plus rien ne pique. Même pas les larmes.",
+  "Tu veux pas mourir. Mais tu veux plus vivre non plus.",
+  "C’est pas de la douleur. C’est pire : c’est rien.",
+  "T’as perdu l’envie. Elle est partie sans laisser de mot.",
+  "Tu pourrais crier. Mais à quoi bon.",
+  "T’as même arrêté d’espérer que ça change.",
+  "T’as l’impression que t’as tout essayé. Même exister.",
+  "T’es fatigué sans bouger. Usé de l’intérieur.",
+  "T’as envie qu’on te serre fort. Mais personne voit.",
+  "Parfois t’attends qu’on te dise de rester.",
+  "Tu marches sur des morceaux de toi-même.",
+  "Tu lis ces phrases comme une confession muette.",
+  "La nuit est plus douce que le jour. Parce qu’elle ment.",
+  "T’as peur qu’un jour tu ressentes plus rien du tout.",
+  "Ce n’est plus une crise. C’est ton quotidien.",
+  "Y’a plus de combat. Juste une reddition lente.",
+  "Tu veux hurler dans un vide qui t’étouffe.",
+  "Le monde tourne. T’as été laissé sur le quai.",
+  "Même ton souffle te semble de trop.",
+  "T’as voulu disparaître sans laisser de trace.",
+  "T’as pas échoué. T’as juste été fatigué trop longtemps.",
+  "Tu comptes les jours comme on compte les cicatrices.",
+  "Plus personne ne te cherche. Et ça fait presque du bien.",
+  "T’espères un accident, pas un miracle.",
+  "T’as dit que ça allait. On t’a cru. Et t’as regretté.",
+  "La seule chose que t’arrives à ressentir, c’est le manque.",
+  "T’as été fort trop longtemps. Maintenant tu t’éteins.",
+  "T’as pas besoin d’aide. Juste de disparaître quelques jours.",
+  "C’est pas une phase. C’est une chute lente.",
+  "T’es là sans être là. En veille depuis des mois.",
+  "T’as plus la force d’expliquer. Tu t’éloignes en silence.",
+  "T’as envie qu’on te dise : je vois que tu souffres.",
+  "Même le vide pèse trop lourd.",
+  "T’as l’impression d’être en trop dans ta propre vie.",
+  "Tu continues juste parce que t’as pas trouvé de sortie.",
+  "Tu fais tout en pilote automatique. Même respirer.",
+  "Le monde ne va pas mal. Il va sans toi.",
+  "T’as perdu la notion du temps. T’as juste perdu.",
+  "Tu veux pas mourir. T’as juste plus envie d’être ici.",
+  "T’as arrêté d’attendre des messages. Personne n’écrit.",
+  "Même tes pensées te laissent tomber.",
+  "Tu t’excuses d’exister, même en silence.",
+  "T’aurais voulu que quelqu’un remarque l’absence, pas le départ.",
+  "Chaque minute te griffe un peu plus.",
+  "T’as cherché un sens. T’as trouvé l’usure.",
+  "T’as crié sans bruit pendant des années.",
+  "T’as été là pour tout le monde. Et personne n’a vu que t’étais plus là.",
+  "T’as vidé ton cœur, et y’a plus rien à verser.",
+  "Tu souris encore parfois, pour que ça ait l’air normal.",
+  "Tu t’es effacé si lentement que personne ne l’a remarqué.",
+  "T’as plus peur de tomber. T’as déjà touché le fond.",
+  "Pourquoi pas en finir finalement ?"
+  ];
+
+  let index = 0;
+  const quote = document.getElementById("quote");
+  const enterBtn = document.getElementById("enterBtn");
+  const welcome = document.getElementById("welcome");
+  const main = document.getElementById("main");
+  const music = document.getElementById("music");
+
+  const muteBtn = document.getElementById("muteBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const playBtn = document.getElementById("playBtn");
+  const musicInput = document.getElementById("musicInput");
+  const importBtn = document.getElementById("importBtn");
+  const volumeSlider = document.getElementById("volumeSlider");
+
+  enterBtn.addEventListener("click", async () => {
+    const docEl = document.documentElement;
+    if (docEl.requestFullscreen) docEl.requestFullscreen();
+    else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+    else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
+
+    welcome.style.opacity = '0';
+    setTimeout(() => {
+      welcome.style.display = 'none';
+      main.style.display = 'block';
+    }, 1500);
+
+try {
+  music.volume = 0.25;
+  volumeSlider.value = 0.25;
+  await music.play();
+} catch (err) {
+  console.warn("Autoplay bloqué par le navigateur.");
+}
+
+    setInterval(() => {
+      quote.textContent = phrases[index];
+      index = (index + 1) % phrases.length;
+    }, 10000);
+  });
+
+  muteBtn.addEventListener("click", () => {
+    music.muted = !music.muted;
+    muteBtn.textContent = music.muted ? "Unmute" : "Mute";
+  });
+
+  pauseBtn.addEventListener("click", () => {
+    music.pause();
+  });
+
+  playBtn.addEventListener("click", () => {
+    music.play();
+  });
+
+  importBtn.addEventListener("click", () => {
+    musicInput.click();
+  });
+
+  musicInput.addEventListener("change", () => {
+    const file = musicInput.files[0];
+    if (file && file.type.startsWith("audio/")) {
+      const url = URL.createObjectURL(file);
+      music.src = url;
+      music.play().catch(() => {});
+      muteBtn.textContent = "Mute";
+      music.muted = false;
+    } else {
+      alert("Seuls les fichiers audio sont acceptés (.mp3, .mpeg).");
+    }
+  });
+
+  volumeSlider.addEventListener("input", () => {
+    music.volume = parseFloat(volumeSlider.value);
+  });
+</script>
+
+</body>
+</html>
